@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Matter Mayhem: Boss Battle</title>
+<style>
+:root{--gold:#f5c542;--ink:#eef3f8;--muted:#9aa8b7;--panel:#17212b;--panel2:#202d39;--danger:#d34b4b;--good:#46b978;--blue:#4aa3df}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 50% 0,#253646 0,#101820 48%,#090d11 100%);color:var(--ink);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+#game{max-width:1000px;margin:auto;padding:20px}.top{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.brand{font-size:clamp(24px,5vw,46px);font-weight:900;letter-spacing:1px;color:var(--gold);text-shadow:0 3px #000}.stats{display:flex;gap:10px;flex-wrap:wrap}.pill{background:#111a22;border:1px solid #3b4c5d;border-radius:999px;padding:8px 13px;font-weight:700}
+.arena{margin-top:18px;background:linear-gradient(#253747,#18242f);border:2px solid #41576a;border-radius:20px;padding:18px;overflow:hidden}.round{text-align:center;font-weight:900;color:var(--gold);letter-spacing:2px;margin-bottom:12px}.fighters{display:grid;grid-template-columns:1fr 1fr;gap:18px}.fighter{background:#111a22;border-radius:16px;padding:14px;border:1px solid #3b4c5d;position:relative}.fighter h2{margin:0 0 8px}.avatar{height:145px;display:grid;place-items:center;font-size:88px;filter:drop-shadow(0 8px 5px #0008);transition:.18s}.enemy .avatar{font-size:96px}.bar{height:20px;background:#3a2020;border-radius:12px;overflow:hidden;border:1px solid #000}.fill{height:100%;width:100%;background:linear-gradient(90deg,#2b9e5f,#62d38f);transition:.35s}.enemy .fill{background:linear-gradient(90deg,#b83232,#ed6a5e)}.hptext{font-size:13px;color:var(--muted);margin-top:5px}
+.card{margin-top:18px;background:var(--panel);border:1px solid #41576a;border-radius:18px;padding:20px}.qnum{color:var(--gold);font-weight:800}.question{font-size:clamp(20px,3vw,28px);font-weight:800;line-height:1.25;margin:10px 0 18px}.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}.answer{min-height:62px;border:1px solid #4b6174;background:#22313e;color:white;border-radius:12px;padding:12px;font-size:16px;font-weight:700;cursor:pointer;text-align:left}.answer:hover{background:#2c4050}.answer:disabled{cursor:default;opacity:.9}.answer.good{background:#17643d;border-color:#5be29a}.answer.bad{background:#762c2c;border-color:#ff7d73}.feedback{min-height:52px;margin-top:14px;padding:12px;border-radius:10px;background:#101820;color:#dce5ed}.next{display:none;margin:14px auto 0;background:var(--gold);color:#111;border:0;border-radius:10px;padding:12px 24px;font-size:17px;font-weight:900;cursor:pointer}
+.overlay{position:fixed;inset:0;background:#080b0edb;display:grid;place-items:center;padding:20px;z-index:5}.modal{max-width:620px;width:100%;background:#17212b;border:2px solid var(--gold);border-radius:22px;padding:28px;text-align:center}.modal h1{color:var(--gold);font-size:clamp(30px,6vw,52px);margin:0 0 10px}.modal p{line-height:1.5;color:#d5dee7}.start{background:var(--gold);border:0;border-radius:12px;padding:14px 28px;font-size:20px;font-weight:900;cursor:pointer}.name{width:min(350px,100%);padding:12px;border-radius:10px;border:1px solid #647789;background:#0d151c;color:white;font-size:16px;margin:10px}.hit{animation:hit .3s}.crit{animation:crit .45s}@keyframes hit{25%{transform:translateX(-12px)}50%{transform:translateX(12px)}75%{transform:translateX(-6px)}}@keyframes crit{50%{transform:scale(1.18) rotate(5deg)}}.floating{position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);font-size:32px;font-weight:900;color:#fff;text-shadow:0 2px 5px #000;pointer-events:none;animation:float 1s forwards}@keyframes float{to{transform:translate(-50%,-120px);opacity:0}}
+@media(max-width:650px){.fighters,.answers{grid-template-columns:1fr}.avatar{height:100px;font-size:64px}.enemy .avatar{font-size:70px}.brand{text-align:center;width:100%}}
+</style>
+</head>
+<body>
+<div id="game">
+ <div class="top"><div class="brand">MATTER MAYHEM</div><div class="stats"><div class="pill">Score: <span id="score">0</span></div><div class="pill">Streak: <span id="streak">0</span>🔥</div><div class="pill">Lives: <span id="lives">3</span></div></div></div>
+ <section class="arena">
+  <div class="round" id="round">ROUND 1</div>
+  <div class="fighters">
+   <div class="fighter player"><h2 id="playerName">Scientist</h2><div class="avatar" id="playerAvatar">🧪</div><div class="bar"><div class="fill" id="playerHP"></div></div><div class="hptext"><span id="php">100</span>/100 HP</div></div>
+   <div class="fighter enemy"><h2 id="enemyName">Mixture Minion</h2><div class="avatar" id="enemyAvatar">👾</div><div class="bar"><div class="fill" id="enemyHP"></div></div><div class="hptext"><span id="ehp">100</span>/100 HP</div></div>
+  </div>
+ </section>
+ <section class="card">
+  <div class="qnum" id="qnum">Question 1</div><div class="question" id="question"></div><div class="answers" id="answers"></div>
+  <div class="feedback" id="feedback">Choose wisely. The monster has tenure.</div><button class="next" id="next">CONTINUE BATTLE</button>
+ </section>
+</div>
+<div class="overlay" id="overlay"><div class="modal" id="modal">
+ <h1>MATTER MAYHEM</h1><h2>BOSS BATTLE</h2>
+ <p>Correct answers deal damage. Wrong answers hurt you. Build a streak for critical hits. Defeat all four enemies, then survive the Matter Monster.</p>
+ <input class="name" id="nameInput" maxlength="24" placeholder="Student / Team name">
+ <br><button class="start" id="start">ENTER THE LAB</button>
+</div></div>
+<script>
+const QUESTIONS=[["Mixture Minion", "Which material is a heterogeneous mixture?", ["Air", "Seawater", "Sand", "Steel"], 2, "Sand has noticeably different parts, so it is heterogeneous.", 16], ["Mixture Minion", "A compound always contains:", ["One type of atom", "Two or more elements in a fixed proportion", "A variable composition", "Visible layers"], 1, "Compounds contain two or more elements joined in fixed proportions.", 16], ["Mixture Minion", "Milk is classified as a:", ["Solution", "Suspension", "Colloid", "Element"], 2, "Milk is a colloid. Its particles are intermediate in size and do not settle into layers.", 16], ["Mixture Minion", "Which mixture separates into layers over time?", ["Solution", "Suspension", "Colloid", "Compound"], 1, "A suspension is heterogeneous and separates into layers over time.", 16], ["Mixture Minion", "Windshield wiper fluid is an example of a:", ["Solution", "Suspension", "Colloid", "Element"], 0, "The chapter identifies windshield wiper fluid as a solution.", 16], ["Property Brute", "Which is NOT a physical property?", ["Density", "Boiling point", "Flammability", "Conductivity"], 2, "Flammability is a chemical property because burning changes composition.", 18], ["Property Brute", "The ability of a solid to be hammered without shattering is:", ["Viscosity", "Malleability", "Reactivity", "Density"], 1, "Malleability is the ability of a solid to be hammered without shattering.", 18], ["Property Brute", "Which liquid has high viscosity?", ["Water", "Vinegar", "Corn syrup", "Liquid nitrogen"], 2, "Corn syrup resists flowing and therefore has high viscosity.", 18], ["Property Brute", "Density is calculated as:", ["Volume \u00f7 mass", "Mass \u00f7 volume", "Mass \u00d7 volume", "Mass \u00f7 temperature"], 1, "Density is the ratio of mass to volume.", 18], ["Property Brute", "Which property is most important for a wire carrying electric current?", ["Hardness", "Boiling point", "Conductivity", "Viscosity"], 2, "Conductivity describes a material's ability to conduct energy, including electricity.", 18], ["Separation Sludge", "Filtration separates materials primarily by differences in:", ["Particle size", "Boiling point", "Flammability", "Reactivity"], 0, "Filtration separates materials based on particle size.", 20], ["Separation Sludge", "Distillation separates substances in a solution based on:", ["Color", "Particle size", "Boiling point", "Malleability"], 2, "Distillation uses differences in boiling points.", 20], ["Separation Sludge", "Which mixture can be separated with a filter?", ["Solution", "Suspension", "Compound", "Colloid"], 1, "Suspensions have particles large enough to be separated by filtration.", 20], ["Separation Sludge", "Which is a physical change?", ["Rusting iron", "Burning a match", "Slicing a tomato", "Forming a precipitate"], 2, "Slicing changes size and shape but does not change composition.", 20], ["Separation Sludge", "Boiling water is a:", ["Chemical change", "Physical change", "Chemical property", "Precipitation reaction"], 1, "Water changes state, but it remains water.", 20], ["Chemical Chaos", "Which is a chemical property?", ["Density", "Hardness", "Flammability", "Melting point"], 2, "Flammability describes the ability to burn and produce a composition change.", 22], ["Chemical Chaos", "Reactivity describes:", ["Resistance to flow", "How readily a substance combines chemically with other substances", "Mass per unit volume", "Resistance to scratching"], 1, "Reactivity is how readily a substance combines chemically with other substances.", 22], ["Chemical Chaos", "Vinegar mixed with baking soda produces bubbles of:", ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"], 2, "The bubbles are carbon dioxide gas, evidence associated with a chemical change.", 22], ["Chemical Chaos", "A solid that forms and separates from a liquid mixture is a:", ["Solution", "Precipitate", "Colloid", "Element"], 1, "A precipitate is a solid that forms and separates from a liquid mixture.", 22], ["Chemical Chaos", "You can be certain a chemical change occurred when:", ["The color changes", "The temperature changes", "A new substance forms", "The shape changes"], 2, "Formation of a new substance is the decisive evidence of a chemical change.", 22], ["MATTER MONSTER", "A uniform mixture forms when one substance dissolves in another and does not settle. It is a:", ["Compound", "Solution", "Suspension", "Element"], 1, "A solution is a homogeneous mixture formed when substances dissolve.", 25], ["MATTER MONSTER", "An iron horseshoe is heated until it glows red but remains iron. This is:", ["Chemical because color changed", "Physical because no new substance formed", "Chemical because heat was added", "Chemical because iron is reactive"], 1, "The iron is still iron, so its composition has not changed.", 25], ["MATTER MONSTER", "Which set is completely correct?", ["Milk: colloid; muddy water: suspension; windshield fluid: solution", "Milk: solution; muddy water: colloid; windshield fluid: suspension", "Milk: suspension; muddy water: solution; windshield fluid: colloid", "Milk: compound; muddy water: element; windshield fluid: pure substance"], 0, "Those are the three mixture examples used in the chapter.", 25], ["MATTER MONSTER", "A silver-colored coin has a density different from 10.5 g/cm\u00b3. The chapter's density example suggests:", ["It must be pure silver", "It is not pure silver", "Density cannot help identify it", "It must be gold"], 1, "The chapter uses silver's density to show that density can help test purity.", 25], ["MATTER MONSTER", "What is the decisive difference between chemical and physical changes?", ["Chemical changes are always irreversible", "Physical changes never alter appearance", "Chemical changes alter composition; physical changes do not", "Physical changes always change state"], 2, "Composition is the key distinction.", 30]];
+const enemyInfo={
+ "Mixture Minion":["👾","ROUND 1 · MIXTURE MINIONS"],
+ "Property Brute":["🧱","ROUND 2 · PROPERTY PIT"],
+ "Separation Sludge":["🦠","ROUND 3 · SEPARATION STATION"],
+ "Chemical Chaos":["☣️","ROUND 4 · CHEMICAL CHAOS"],
+ "MATTER MONSTER":["👹","FINAL BOSS · THE MATTER MONSTER"]
+};
+let i=0,score=0,streak=0,php=100,ehp=100,lives=3,currentEnemy="",locked=false;
+const $=id=>document.getElementById(id);
+function setBars(){ $("playerHP").style.width=php+"%";$("enemyHP").style.width=ehp+"%";$("php").textContent=php;$("ehp").textContent=ehp;$("score").textContent=score;$("streak").textContent=streak;$("lives").textContent=lives}
+function floater(el,text){let d=document.createElement("div");d.className="floating";d.textContent=text;el.appendChild(d);setTimeout(()=>d.remove(),1000)}
+function setupEnemy(name){
+ currentEnemy=name; ehp=name==="MATTER MONSTER"?150:100;
+ $("enemyName").textContent=name;$("enemyAvatar").textContent=enemyInfo[name][0];$("round").textContent=enemyInfo[name][1];setBars();
+}
+function render(){
+ if(i>=QUESTIONS.length){return finish()}
+ let q=QUESTIONS[i];
+ if(q[0]!==currentEnemy) setupEnemy(q[0]);
+ locked=false;$("qnum").textContent=`Battle Question ${i+1} of ${QUESTIONS.length}`;$("question").textContent=q[1];$("feedback").textContent="Choose your attack.";$("next").style.display="none";
+ let box=$("answers");box.innerHTML="";
+ q[2].forEach((opt,idx)=>{let b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+idx)+". "+opt;b.addEventListener("click",()=>answer(idx,b));box.appendChild(b)});
+}
+function answer(choice,button){
+ if(locked)return;locked=true;let q=QUESTIONS[i];let buttons=[...document.querySelectorAll(".answer")];buttons.forEach(b=>b.disabled=true);
+ if(choice===q[3]){
+   streak++; let crit=streak>=3; let dmg=q[5]+(crit?10:0);ehp=Math.max(0,ehp-dmg);score+=100+(streak*20)+(crit?50:0);
+   button.classList.add("good");$("enemyAvatar").classList.add(crit?"crit":"hit");floater(document.querySelector(".enemy"),crit?`CRITICAL! -${dmg}`:`-${dmg}`);
+   $("feedback").textContent=(crit?"CRITICAL HIT! ":"Direct hit! ")+q[4];
+ } else {
+   streak=0;php=Math.max(0,php-25);button.classList.add("bad");buttons[q[3]].classList.add("good");$("playerAvatar").classList.add("hit");floater(document.querySelector(".player"),"-25");
+   $("feedback").textContent="The monster hits back. "+q[4];
+ }
+ setTimeout(()=>{$("enemyAvatar").classList.remove("hit","crit");$("playerAvatar").classList.remove("hit")},500);setBars();
+ if(php<=0){lives--; if(lives>0){php=100;$("feedback").textContent+=" You lost a life, but the lab has irresponsibly issued you another.";setBars()}else{return gameOver()}}
+ $("next").style.display="block";
+}
+$("next").addEventListener("click",()=>{
+ let defeated=ehp<=0,old=currentEnemy;i++;
+ if(i>=QUESTIONS.length)return finish();
+ let nextEnemy=QUESTIONS[i][0];
+ if(defeated && nextEnemy===old){ehp=35;setBars()} // enemy staggers back if questions remain
+ if(nextEnemy!==old){score+=250;php=Math.min(100,php+30)}
+ render();
+});
+function rank(){if(score>=4300)return"Matter Destroyer";if(score>=3400)return"Matter Master";if(score>=2500)return"Chemist";return"Lab Assistant"}
+function finish(){
+ $("overlay").style.display="grid";$("modal").innerHTML=`<h1>VICTORY</h1><div style="font-size:80px">🏆</div><h2>${rank()}</h2><p>You survived Matter Mayhem.</p><p><b>Final Score: ${score}</b><br>Lives remaining: ${lives}</p><button class="start" id="restart">PLAY AGAIN</button>`;
+ $("restart").addEventListener("click",()=>location.reload());
+}
+function gameOver(){
+ $("overlay").style.display="grid";$("modal").innerHTML=`<h1>LAB DESTROYED</h1><div style="font-size:80px">💥</div><p>The Matter Monster has won. Humanity's inability to classify mixtures has finally caught up with it.</p><p><b>Score: ${score}</b></p><button class="start" id="restart">TRY AGAIN</button>`;
+ $("restart").addEventListener("click",()=>location.reload());
+}
+$("start").addEventListener("click",()=>{let n=$("nameInput").value.trim();if(n)$("playerName").textContent=n;$("overlay").style.display="none";setupEnemy(QUESTIONS[0][0]);render()});
+</script>
+</body></html>
